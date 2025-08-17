@@ -1,3 +1,12 @@
+"""Convenience readers for Exodus and Nemesis files.
+
+This module exposes :class:`ExodusReader`, which dispatches to single-file or
+multi-file readers as appropriate.  The multi-file reader aggregates nodal and
+elemental variable names from all children and exposes them via the
+``nodal_var_names`` and ``elem_var_names`` attributes.  These lists can be used
+to discover variables that may be requested with :meth:`get_data_at_time`.
+"""
+
 from __future__ import annotations
 
 import glob
@@ -140,22 +149,35 @@ class _MultiExodusReader:
         global_times = set()
         file_times = []
         exodus_readers = []
+        nodal_names: List[str] = []
+        elem_names: List[str] = []
         for file_name in self.file_names:
             er = _SingleExodusReader(file_name)
             times = er.times
             global_times.update(times[:])
             exodus_readers.append(er)
             file_times.append([min(times), max(times)])
+            nodal_names.extend(getattr(er, "nodal_var_names", []))
+            elem_names.extend(getattr(er, "elem_var_names", []))
         self.dim = exodus_readers[0].dim
         global_times = list(global_times)
         global_times.sort()
         self.global_times = global_times
         self.exodus_readers = exodus_readers
         self.file_times = np.asarray(file_times)
+        self.nodal_var_names = sorted(set(nodal_names))
+        self.elem_var_names = sorted(set(elem_names))
+
+    def _validate_var_name(self, var_name: str) -> None:
+        if var_name not in self.nodal_var_names and var_name not in self.elem_var_names:
+            raise ValueError(
+                "Value not in nodal or elemental variables. Check variable name."
+            )
 
     def get_data_from_file_idx(
         self, var_name: str, read_time: float, i: int
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        self._validate_var_name(var_name)
         er = self.exodus_readers[i]
         x = er.x
         y = er.y
@@ -170,6 +192,7 @@ class _MultiExodusReader:
     def get_data_at_time(
         self, var_name: str, read_time: float
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        self._validate_var_name(var_name)
         X = []
         Y = []
         Z = []
