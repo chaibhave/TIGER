@@ -1,7 +1,7 @@
 #SHOWS HOW TO PLOT AN EXODUS FILE AND A POSTPROCESSOR CSV FILE AT THE SAME TIME
 
-#IMPORT MultiExodusReader CLASS TO READ EXODUS FILES
-from MultiExodusReader import MultiExodusReader
+#IMPORT ExodusReader CLASS TO READ EXODUS FILES
+from ExodusReader import ExodusReader
 
 #MATPLOTLIB
 import matplotlib.pyplot as plt
@@ -46,8 +46,8 @@ GT_post_proc = data[labels.index('grain_tracker') ]
 filenames = '2D/grain_growth_2D_graintracker_out.e*'
 
 
-#READ EXODUS FILE SERIES WITH MultiExodusReader
-MF = MultiExodusReader(filenames)
+#READ EXODUS FILE SERIES WITH ExodusReader
+MF = ExodusReader(filenames)
 
 #GET A LIST OF SIMULATION TIME POINTS
 times = MF.global_times

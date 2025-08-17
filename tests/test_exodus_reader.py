@@ -1,6 +1,6 @@
 import pytest
 np = pytest.importorskip("numpy", exc_type=ImportError)
-import MultiExodusReader as mer
+import ExodusReader as er
 
 
 class DummyExodusReader:
@@ -16,9 +16,10 @@ class DummyExodusReader:
 
 
 def test_get_data_at_time(monkeypatch):
-    monkeypatch.setattr(mer.glob, "glob", lambda pattern: ["dummy.e"])
-    monkeypatch.setattr(mer.ExodusReader, "ExodusReader", DummyExodusReader)
-    mr = mer.MultiExodusReader("dummy.e")
+    monkeypatch.setattr(er.glob, "glob", lambda pattern: ["dummy.e"])
+    monkeypatch.setattr(er.glob, "has_magic", lambda pattern: True)
+    monkeypatch.setattr(er, "_SingleExodusReader", DummyExodusReader)
+    mr = er.ExodusReader("dummy.e")
     x, y, z, c = mr.get_data_at_time("c_Cr", 1.0)
     assert x.shape == (2, 1)
     assert y.shape == (2, 1)

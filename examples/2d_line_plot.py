@@ -1,5 +1,5 @@
 #SHOWS HOW TO DO A LINE PLOT ON A 2D MESH
-from MultiExodusReader import MultiExodusReader
+from ExodusReader import ExodusReader
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -16,8 +16,8 @@ fig, (ax1,ax2) = plt.subplots(1,2,figsize=(7,3),dpi = 500)
 #FILE NAME STRING. '*' CAN BE REPLACED WITH ANY CHARACTER IN ACTUAL FILE NAME, EG. 2D/grain_growth_2D_graintracker_out.e.1921.0000 OR 2D/grain_growth_2D_graintracker_out.e-s001
 filenames = '2D/grain_growth_2D_graintracker_out.e*'                #Star represents all files following this template
 
-#CREATE MULTIEXODUSREADER OBJECT
-MF = MultiExodusReader(filenames)
+#CREATE EXODUSREADER OBJECT
+MF = ExodusReader(filenames)
 
 #GET A LIST OF ALL TIMES FROM SIMULATION
 times = MF.global_times
