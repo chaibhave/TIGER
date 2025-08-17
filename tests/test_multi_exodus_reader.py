@@ -1,5 +1,5 @@
 import pytest
-np = pytest.importorskip("numpy")
+np = pytest.importorskip("numpy", exc_type=ImportError)
 import MultiExodusReader as mer
 
 

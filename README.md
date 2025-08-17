@@ -24,7 +24,7 @@ TIGER is a Python module for directly accessing Exodus and Nemesis file data as 
     ```
 3. Create the TIGER environment and install dependencies
     ```
-    conda create --name tiger_env h5py netcdf4 matplotlib scipy numpy
+    conda create --name tiger_env h5py netcdf4 matplotlib scipy numpy pytest cmcrameri mpi4py
     ```
 4. Build the TIGER package in development mode
     ```
@@ -46,7 +46,7 @@ TIGER is a Python module for directly accessing Exodus and Nemesis file data as 
     ```
 2. Install dependencies using PIP
     ```
-    pip install matplotlib numpy scipy h5py netcdf4 opencv-python
+    pip install matplotlib numpy scipy h5py netcdf4 opencv-python pytest cmcrameri mpi4py
     ```
 3. Change to TIGER directory
     ```
