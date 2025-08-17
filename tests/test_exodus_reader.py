@@ -43,3 +43,15 @@ def test_missing_files_raise_error(monkeypatch):
     monkeypatch.setattr(er.glob, "has_magic", lambda pat: True)
     with pytest.raises(FileNotFoundError, match=pattern):
         er.ExodusReader(pattern)
+
+
+def test_get_data_at_time_single_file(monkeypatch):
+    monkeypatch.setattr(er.glob, "glob", lambda pattern: ["f1.e"])
+    monkeypatch.setattr(er.glob, "has_magic", lambda pattern: True)
+    monkeypatch.setattr(er, "_SingleExodusReader", DummyExodusReader)
+    mr = er.ExodusReader("dummy.e")
+    x, y, z, c = mr.get_data_at_time("c_Cr", 1.0)
+    assert x.shape == (2, 1)
+    assert y.shape == (2, 1)
+    assert z.shape == (2, 1)
+    assert c.shape == (2,)

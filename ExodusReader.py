@@ -202,16 +202,10 @@ class _MultiExodusReader:
         for i, file_time in enumerate(self.file_times):
             if file_time[0] <= read_time and file_time[1] >= read_time:
                 x, y, z, c = self.get_data_from_file_idx(var_name, read_time, i)
-                try:
-                    X.append(x)
-                    Y.append(y)
-                    Z.append(z)
-                    C.append(c)
-                except Exception:  # pragma: no cover - fallback path
-                    X = x
-                    Y = y
-                    Z = z
-                    C = c
+                X.append(x)
+                Y.append(y)
+                Z.append(z)
+                C.append(c)
         X = np.vstack(X)
         Y = np.vstack(Y)
         Z = np.vstack(Z)
