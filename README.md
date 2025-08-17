@@ -2,6 +2,13 @@
 
 TIGER is a Python module for directly accessing Exodus and Nemesis file data as numpy arrays. Examples demonstrate how to generate high quality figures using matplotlib and the TIGER interface.
 
+## Querying variables
+When reading multiple Exodus files, ``ExodusReader`` combines available variable
+names from each file. The resulting lists are exposed on the multi-file reader
+via ``nodal_var_names`` and ``elem_var_names``. These attributes show all nodal
+and elemental variables that may be requested with APIs such as
+``get_data_at_time``.
+
 ## Installation instructions:
 1. Go to your installation directory
     ```
