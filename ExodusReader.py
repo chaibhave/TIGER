@@ -146,6 +146,8 @@ class _MultiExodusReader:
 
     def __init__(self, file_names: str) -> None:
         self.file_names = glob.glob(file_names)
+        if not self.file_names:
+            raise FileNotFoundError(file_names)
         global_times = set()
         file_times = []
         exodus_readers = []

@@ -35,3 +35,11 @@ def test_get_data_at_time(monkeypatch):
     assert np.array_equal(c, np.array([1, 2]))
     with pytest.raises(ValueError):
         mr.get_data_at_time("missing", 1.0)
+
+
+def test_missing_files_raise_error(monkeypatch):
+    pattern = "missing*.e"
+    monkeypatch.setattr(er.glob, "glob", lambda pat: [])
+    monkeypatch.setattr(er.glob, "has_magic", lambda pat: True)
+    with pytest.raises(FileNotFoundError, match=pattern):
+        er.ExodusReader(pattern)
