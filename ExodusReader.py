@@ -2,12 +2,25 @@ from netCDF4 import Dataset
 import numpy as np
 import os
 import re
+try:
+    from mpi4py import MPI
+except ImportError:  # pragma: no cover - mpi4py is optional
+    MPI = None
 
 class ExodusReader:
     def __init__(self,file_name):
         if os.path.exists(file_name):
             self.file_name = file_name
-            self.mesh = Dataset(self.file_name,'r') #,parallel=parallel_flag
+            if MPI is not None:
+                self.mesh = Dataset(
+                    self.file_name,
+                    "r",
+                    parallel=True,
+                    comm=MPI.COMM_WORLD,
+                    info=MPI.Info(),
+                )
+            else:
+                self.mesh = Dataset(self.file_name, "r")
             self.get_times()
             self.get_xyz()
             try:

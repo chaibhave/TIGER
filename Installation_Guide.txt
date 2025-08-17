@@ -5,14 +5,14 @@ Installation instructions:
 Option A - Conda installation (Recommended):
 If you don't already have Conda, install it: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
   3. module load conda                              (Only needed on Hipergator)
-  4. conda create --name tiger_env h5py netcdf4 matplotlib scipy numpy
+  4. conda create --name tiger_env h5py netcdf4 matplotlib scipy numpy pytest cmcrameri mpi4py
   5. conda activate tiger_env                       (This step needs to be run whenever you want to use TIGER in a new terminal)
   6. conda develop ~/projects/TIGER                 (Or your TIGER directory)
   7. conda install -c menpo opencv
 
 Option B - Pip installation :
   3. module load python                             (Optional, needed on Hipergator )
-  4. pip install matplotlib numpy scipy h5py netcdf4 opencv-python
+  4. pip install matplotlib numpy scipy h5py netcdf4 opencv-python pytest cmcrameri mpi4py
   5. cd ~/projects/TIGER/
   6. export PYTHONPATH=$PYTHONPATH:~/projects/TIGER (Or whichever location you cloned TIGER to.)
 
