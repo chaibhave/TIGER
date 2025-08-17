@@ -26,9 +26,13 @@ class MultiExodusReader:
         x = er.x
         y = er.y
         z = er.z
-        idx = np.where(read_time == er.times)[0][0]
-        c = er.get_var_values(var_name,idx)
-        return (x,y,z,c)
+        # Use a tolerance when matching floating point time values
+        idx_arr = np.where(np.isclose(er.times, read_time))[0]
+        if idx_arr.size == 0:
+            raise ValueError(f"Time {read_time} not found in file {er.file_name}")
+        idx = idx_arr[0]
+        c = er.get_var_values(var_name, idx)
+        return (x, y, z, c)
 
     def get_data_at_time(self,var_name,read_time):
         X = []
