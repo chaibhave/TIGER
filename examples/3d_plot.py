@@ -1,4 +1,4 @@
-from MultiExodusReader import MultiExodusReader
+from ExodusReader import ExodusReader
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -14,8 +14,8 @@ from mpl_toolkits.mplot3d import Axes3D
 #ANY CHARACTER(S) CAN BE PLACED IN PLACE OF THE *, EG. 2D/grain_growth_2D_graintracker_out.e.1921.0000 or 2D/grain_growth_2D_graintracker_out.e-s001
 filenames = '3D/grain_growth_3D_out.e*'                             #Star represents all files following this template
 
-#READ EXODUS FILE SERIES WITH MultiExodusReader
-MF = MultiExodusReader(filenames)
+#READ EXODUS FILE SERIES WITH ExodusReader
+MF = ExodusReader(filenames)
 
 #GET A LIST OF SIMULATION TIME POINTS
 times = MF.global_times

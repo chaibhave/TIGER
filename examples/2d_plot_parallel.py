@@ -1,4 +1,4 @@
-from MultiExodusReader import MultiExodusReader
+from ExodusReader import ExodusReader
 import multiprocessing as mp
 import glob
 
@@ -13,7 +13,7 @@ import os
 #WE READ THE EXODUS FILE ONCE FOR EACH PROCESS --> MAKE SURE SYSTEM HAS SUFFICIENT RAM FOR THIS
 filenames = '2D/grain_growth_2D_graintracker_out.e*'                             #STAR REPRESENTS ALL FILES FOLLOWING THIS TEMPLATE
 files_list = glob.glob(filenames)
-MF = MultiExodusReader(filenames)
+MF = ExodusReader(filenames)
 times = MF.global_times
 
 #Function that plots a single frame

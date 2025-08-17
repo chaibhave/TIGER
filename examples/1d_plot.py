@@ -1,7 +1,7 @@
 ##EXAMPLE FOR LINE PLOT ON EXODUS FILES
 
 import matplotlib.pyplot as plt
-from MultiExodusReader import MultiExodusReader
+from ExodusReader import ExodusReader
 import numpy as np
 
 #CLOSE EXISTING PLOTS
@@ -15,10 +15,10 @@ plt.rc('font', family='sans-serif',weight='bold')
 ax = fig.add_subplot(111)
 
 #NAME OF EXODUS FILE TO PLOT
-filenames = '1D/Ni20Cr_hart.e'
+filenames = '1D/Ni20Cr_hart.e*'
 
-#OPEN MULTI EXODUS READER
-MF = MultiExodusReader(filenames)
+#OPEN EXODUS READER
+MF = ExodusReader(filenames)
 
 #ALL TIME STEPS IN EXODUS FILES
 times = MF.global_times
