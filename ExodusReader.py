@@ -25,13 +25,17 @@ class BaseExodusReader:
 
         self.file_name = file_name
         if MPI is not None:
-            self.mesh = Dataset(
-                self.file_name,
-                "r",
-                parallel=True,
-                comm=MPI.COMM_WORLD,
-                info=MPI.Info(),
-            )
+            try:
+                self.mesh = Dataset(
+                    self.file_name,
+                    "r",
+                    parallel=True,
+                    comm=MPI.COMM_WORLD,
+                    info=MPI.Info(),
+                )
+            except ValueError:
+                # Fall back to serial mode if netCDF4 lacks parallel support
+                self.mesh = Dataset(self.file_name, "r")
         else:
             self.mesh = Dataset(self.file_name, "r")
 
