@@ -134,11 +134,30 @@ class BaseExodusReader:
             raise ValueError("Value not in nodal or elemental variables. Check variable name.")
         return var_vals
 
+    def close(self) -> None:
+        """Close the underlying netCDF dataset."""
+        mesh = getattr(self, "mesh", None)
+        if mesh is not None:
+            mesh.close()
+            self.mesh = None
+
+    def __enter__(self) -> "BaseExodusReader":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:  # pragma: no cover - simple delegation
+        self.close()
+
 
 class _SingleExodusReader(BaseExodusReader):
     """Internal helper for reading a single file."""
+    def close(self) -> None:
+        super().close()
 
-    pass
+    def __enter__(self) -> "_SingleExodusReader":  # pragma: no cover - trivial
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:  # pragma: no cover - trivial
+        self.close()
 
 
 class _MultiExodusReader:
@@ -211,6 +230,19 @@ class _MultiExodusReader:
         Z = np.vstack(Z)
         C = np.hstack(C)
         return X, Y, Z, C
+
+    def close(self) -> None:
+        for er in getattr(self, "exodus_readers", []):
+            try:
+                er.close()
+            except Exception:
+                pass
+
+    def __enter__(self) -> "_MultiExodusReader":  # pragma: no cover - trivial
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:  # pragma: no cover - trivial
+        self.close()
 
 
 class ExodusReader:
