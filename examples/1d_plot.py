@@ -23,8 +23,8 @@ MF = ExodusReader(filenames)
 #ALL TIME STEPS IN EXODUS FILES
 times = MF.global_times
 
-#READ c_Cr DATA at FIRST TIMESTEP
-x,y,z,c = MF.get_data_at_time('c_Cr',times[1])
+#READ c_Cr DATA at FIRST TIMESTEP FOR ELEMENT BLOCK 1
+x,y,z,c = MF.get_data_at_time('c_Cr',times[1],block_id=1)
 
 # For 1D, EXODUS STORES X ELEMENTS TWICE, SO WE SELECT FIRST SET USING x[:,0]
 ax.plot(x[:,0],c[:],'r-',linewidth=1.5)
