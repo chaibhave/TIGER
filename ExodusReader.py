@@ -12,7 +12,7 @@ from __future__ import annotations
 import glob
 import os
 import re
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 from netCDF4 import Dataset
@@ -83,15 +83,30 @@ class BaseExodusReader:
 
         connect_re = re.compile("connect[0-9]+$")
         select_keys = [key for key in self.mesh.variables.keys() if connect_re.match(key)]
-        connect = np.vstack([self.mesh.variables[key][:] for key in select_keys])
-        X = x[connect[:] - 1]
-        Y = y[connect[:] - 1]
-        Z = z[connect[:] - 1]
 
-        self.x = np.asarray(X)
-        self.y = np.asarray(Y)
-        self.z = np.asarray(Z)
-        self.connect = connect
+        self.block_connect: Dict[int, np.ndarray] = {}
+        self.block_xyz: Dict[int, Tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
+        connects = []
+        Xs: List[np.ndarray] = []
+        Ys: List[np.ndarray] = []
+        Zs: List[np.ndarray] = []
+        for key in sorted(select_keys):
+            block_id = int(re.search(r"\d+", key).group())
+            connect = self.mesh.variables[key][:]
+            X = x[connect - 1]
+            Y = y[connect - 1]
+            Z = z[connect - 1]
+            self.block_connect[block_id] = connect
+            self.block_xyz[block_id] = (np.asarray(X), np.asarray(Y), np.asarray(Z))
+            connects.append(connect)
+            Xs.append(X)
+            Ys.append(Y)
+            Zs.append(Z)
+
+        self.connect = np.vstack(connects)
+        self.x = np.vstack(Xs)
+        self.y = np.vstack(Ys)
+        self.z = np.vstack(Zs)
         return self.x, self.y, self.z
 
     def get_nodal_names(self) -> List[str]:
@@ -111,24 +126,33 @@ class BaseExodusReader:
         self.elem_var_names = elem_var_names
         return self.elem_var_names
 
-    def get_var_values(self, var_name: str, timestep: int) -> np.ndarray:
+    def get_var_values(
+        self, var_name: str, timestep: int, block_id: int | None = None
+    ) -> np.ndarray:
         if var_name in getattr(self, "nodal_var_names", []):
             idx = self.nodal_var_names.index(var_name)
             var_name_exodus = "vals_nod_var" + str(idx + 1)
             var_vals_nodal = self.mesh.variables[var_name_exodus]
+            connect = (
+                self.block_connect[block_id]
+                if block_id is not None
+                else self.connect
+            )
             if timestep == -1:
                 var_vals = np.average(
-                    [var_vals_nodal[:, (self.connect[:, i] - 1)] for i in range(self.connect.shape[1])],
+                    [var_vals_nodal[:, (connect[:, i] - 1)] for i in range(connect.shape[1])],
                     0,
                 )
             else:
                 var_vals = np.average(
-                    [var_vals_nodal[timestep, (self.connect[:, i] - 1)] for i in range(self.connect.shape[1])],
+                    [var_vals_nodal[timestep, (connect[:, i] - 1)] for i in range(connect.shape[1])],
                     0,
                 )
         elif var_name in getattr(self, "elem_var_names", []):
             idx = self.elem_var_names.index(var_name)
-            var_name_exodus = "vals_elem_var" + str(idx + 1) + "eb1"
+            if block_id is None:
+                block_id = 1
+            var_name_exodus = f"vals_elem_var{idx + 1}eb{block_id}"
             var_vals = np.asarray(self.mesh.variables[var_name_exodus][timestep])
         else:
             raise ValueError("Value not in nodal or elemental variables. Check variable name.")
@@ -196,22 +220,25 @@ class _MultiExodusReader:
             )
 
     def get_data_from_file_idx(
-        self, var_name: str, read_time: float, i: int
+        self, var_name: str, read_time: float, i: int, block_id: int | None = None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         self._validate_var_name(var_name)
         er = self.exodus_readers[i]
-        x = er.x
-        y = er.y
-        z = er.z
+        if block_id is None:
+            x = er.x
+            y = er.y
+            z = er.z
+        else:
+            x, y, z = er.block_xyz[block_id]
         idx_arr = np.where(np.isclose(er.times, read_time))[0]
         if idx_arr.size == 0:
             raise ValueError(f"Time {read_time} not found in file {er.file_name}")
         idx = idx_arr[0]
-        c = er.get_var_values(var_name, idx)
+        c = er.get_var_values(var_name, idx, block_id=block_id)
         return x, y, z, c
 
     def get_data_at_time(
-        self, var_name: str, read_time: float
+        self, var_name: str, read_time: float, block_id: int | None = None
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         self._validate_var_name(var_name)
         X = []
@@ -220,7 +247,9 @@ class _MultiExodusReader:
         C = []
         for i, file_time in enumerate(self.file_times):
             if file_time[0] <= read_time and file_time[1] >= read_time:
-                x, y, z, c = self.get_data_from_file_idx(var_name, read_time, i)
+                x, y, z, c = self.get_data_from_file_idx(
+                    var_name, read_time, i, block_id=block_id
+                )
                 X.append(x)
                 Y.append(y)
                 Z.append(z)
