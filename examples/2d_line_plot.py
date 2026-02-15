@@ -9,6 +9,10 @@ import numpy as np
 from time import time
 import os
 import math
+from plotting_utils import setup_publication_style, get_scientific_colormap, save_figure
+
+#SETUP PUBLICATION-QUALITY PLOTTING STYLE
+setup_publication_style(use_latex=False)
 
 #FIGURE PARAMS
 fig, (ax1,ax2) = plt.subplots(1,2,figsize=(7,3),dpi = 500)
@@ -16,14 +20,15 @@ fig, (ax1,ax2) = plt.subplots(1,2,figsize=(7,3),dpi = 500)
 #FILE NAME STRING. '*' CAN BE REPLACED WITH ANY CHARACTER IN ACTUAL FILE NAME, EG. 2D/grain_growth_2D_graintracker_out.e.1921.0000 OR 2D/grain_growth_2D_graintracker_out.e-s001
 filenames = '2D/grain_growth_2D_graintracker_out.e*'                #Star represents all files following this template
 
-#CREATE EXODUSREADER OBJECT
-MF = ExodusReader(filenames)
+#GET SCIENTIFIC COLORMAP (PERCEPTUALLY UNIFORM)
+cmap = get_scientific_colormap('batlow')
 
-#GET A LIST OF ALL TIMES FROM SIMULATION
-times = MF.global_times
+#CREATE EXODUSREADER OBJECT WITH CONTEXT MANAGER
+with ExodusReader(filenames) as MF:
+    #GET A LIST OF ALL TIMES FROM SIMULATION
+    times = MF.global_times
 
-
-x,y,z,c = MF.get_data_at_time('bnds',MF.global_times[-1])           #Read coordinates and variable value --> Will be parallelized in future
+    x,y,z,c = MF.get_data_at_time('bnds',MF.global_times[-1])           #Read coordinates and variable value --> Will be parallelized in future
 
 #GET CENTER VALUE FOR EACH CELL
 X_mean = np.mean(x,1)
@@ -81,10 +86,10 @@ ax2.set_xlabel('Distance ($\mu$m)',fontsize=7,fontweight='bold')
 
 ##2D RENDER --> USES THE 2d_plot.py EXAMPLE CODE
 
-#GET POLYGONS FOR EACH CELL IN MESH
-coords = np.asarray([ np.asarray([x_val,y_val]).T for (x_val,y_val) in zip(x,y) ])
-#USE POLYCOLLECTION TO DRAW ALL THE POLYGONS
-p = PolyCollection(coords, cmap=matplotlib.cm.coolwarm, alpha=1)#,edgecolor='k')      #Edge color can be set if you want to show mesh
+    #GET POLYGONS FOR EACH CELL IN MESH
+    coords = np.asarray([ np.asarray([x_val,y_val]).T for (x_val,y_val) in zip(x,y) ])
+    #USE POLYCOLLECTION TO DRAW ALL THE POLYGONS
+    p = PolyCollection(coords, cmap=cmap, alpha=1)#,edgecolor='k')      #Edge color can be set if you want to show mesh
 #USE COLORING VARIABLE 'c' TO COLOR POLYGONS
 p.set_array(np.array(c) )
 #ADD POLYGON COLLECTION TO AXIS --> THIS ACTUALLY PLOTS THE POLYGONS
@@ -112,9 +117,6 @@ ax1.tick_params(axis='y',direction='in',which='major',length=5)
 ax1.set_ylabel('Y ($\mu$m)',fontsize=7,fontweight='bold')
 ax1.set_xlabel('X ($\mu$m)',fontsize=7,fontweight='bold')
 
-#TIGHT LAYOUT ADJUSTS BORDERS AND PADDING TO GIVE BEST LOOKING IMAGE
-plt.tight_layout()
-
-#SAVE FIGURE WITH DPI=500 AND TRANSPARENT BACKGROUND
-fig.savefig('2d_lineplot.png',dpi=500,transparent=True)             #Remember to create the folder pyrender to store images in!!
+#SAVE FIGURE USING save_figure FOR CONSISTENT OUTPUT
+save_figure(fig, '2d_lineplot', formats=['png', 'pdf'], dpi=500, transparent=True)
 plt.close()

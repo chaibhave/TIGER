@@ -9,6 +9,13 @@ import matplotlib
 import numpy as np
 from time import time
 import os
+from plotting_utils import setup_publication_style, get_scientific_colormap, save_figure
+
+#SETUP PUBLICATION-QUALITY PLOTTING STYLE
+setup_publication_style(use_latex=False)
+
+#GET SCIENTIFIC COLORMAP (PERCEPTUALLY UNIFORM) - ACCESSIBLE TO ALL PROCESSES
+cmap = get_scientific_colormap('batlow')
 
 #WE READ THE EXODUS FILE ONCE FOR EACH PROCESS --> MAKE SURE SYSTEM HAS SUFFICIENT RAM FOR THIS
 filenames = '2D/grain_growth_2D_graintracker_out.e*'                             #STAR REPRESENTS ALL FILES FOLLOWING THIS TEMPLATE
@@ -22,7 +29,7 @@ def plot_this_frame(i,frame_time):
 
     x,y,z,c = MF.get_data_at_time('unique_grains',frame_time)               #Read coordinates and variable value --> Will be parallelized in future
     coords = np.asarray([ np.asarray([x_val,y_val]).T for (x_val,y_val) in zip(x,y) ])
-    p = PolyCollection(coords, cmap=matplotlib.cm.coolwarm, alpha=1,edgecolor='k')      #Edge color can be set if you want to show mesh
+    p = PolyCollection(coords, cmap=cmap, alpha=1,edgecolor='k')      #Edge color can be set if you want to show mesh
 
     ## Map plot variable range to color range
     c_min = np.amin(c)
@@ -36,7 +43,7 @@ def plot_this_frame(i,frame_time):
     ax.set_ylim([0,1000])
     ax.set_aspect('equal')                                                                  #Ensures mesh image has same aspect ratio as physical dimensions
     fig.colorbar(p,label="Unique grains")
-    fig.savefig('2D/2d_render_'+str(i)+'.png',dpi=500,transparent=True )             #Remember to create the folder pyrender to store images in!!
+    save_figure(fig, f'2D/2d_render_{i}', formats=['png'], dpi=500, transparent=True)
     plt.close(fig)
     return (True)
 

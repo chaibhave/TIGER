@@ -1,0 +1,5 @@
+# TIGER Optional Dependencies
+# Install with: pip install -r requirements-optional.txt
+
+# Video generation from image frames
+opencv-python
